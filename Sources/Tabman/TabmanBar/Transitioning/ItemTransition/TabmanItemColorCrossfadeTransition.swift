@@ -55,13 +55,18 @@ class TabmanItemColorCrossfadeTransition: TabmanItemTransition {
             return
         }
         
+        let targetIndexColor = bar.items?[bar.buttons.index(of: targetButton) ?? 0].context as? UIColor
+            ?? bar.selectedColor
         let targetColor = UIColor.interpolate(betweenColor: bar.color,
-                                              and: bar.selectedColor,
+                                              and: targetIndexColor,
                                               percent: progress)
+
+        let oldIndexColor = bar.items?[bar.buttons.index(of: oldTargetButton) ?? 0].context as? UIColor
+            ?? bar.selectedColor
         let oldTargetColor = UIColor.interpolate(betweenColor: bar.color,
-                                                 and: bar.selectedColor,
+                                                 and: oldIndexColor,
                                                  percent: 1.0 - progress)
-        
+        print(#function)
         targetButton.tintColor = targetColor
         targetButton.setTitleColor(targetColor, for: .normal)
         oldTargetButton.tintColor = oldTargetColor

@@ -9,6 +9,50 @@
 import UIKit
 import Pageboy
 
+class TabmanCenteredButton: UIButton {
+
+    override func titleRect(forContentRect contentRect: CGRect) -> CGRect {
+        let rect = super.titleRect(forContentRect: contentRect)
+        return CGRect(x: 0, y: contentRect.height - rect.height + 5,
+                      width: contentRect.width, height: rect.height)
+    }
+
+    override func imageRect(forContentRect contentRect: CGRect) -> CGRect {
+        let rect = super.imageRect(forContentRect: contentRect)
+        let titleRect = self.titleRect(forContentRect: contentRect)
+        return CGRect(x: contentRect.width/2.0 - rect.width/2.0,
+                      y: (contentRect.height - titleRect.height)/2.0 - rect.height/2.0,
+                      width: rect.width, height: rect.height)
+    }
+
+    override var intrinsicContentSize: CGSize {
+        let size = super.intrinsicContentSize
+        if let image = imageView?.image {
+            var labelHeight: CGFloat = 0.0
+            if let size = titleLabel?.sizeThatFits(CGSize(width: self.contentRect(forBounds: self.bounds).width,
+                                                          height: CGFloat.greatestFiniteMagnitude)) {
+                labelHeight = size.height
+            }
+            return CGSize(width: size.width, height: image.size.height + labelHeight + 5)
+        }
+        return size
+    }
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        centerTitleLabel()
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        centerTitleLabel()
+    }
+
+    private func centerTitleLabel() {
+        self.titleLabel?.textAlignment = .center
+    }
+}
+
 /// Abstract class for button bars.
 internal class TabmanButtonBar: TabmanBar {
     
@@ -25,7 +69,7 @@ internal class TabmanButtonBar: TabmanBar {
     private struct Defaults {
         static let minimumItemHeight: CGFloat = 40.0
         static let itemImageSize: CGSize = CGSize(width: 25.0, height: 25.0)
-        static let titleWithImageSize: CGSize = CGSize(width: 20.0, height: 20.0)
+        static let titleWithImageSize: CGSize = CGSize(width: 40.0, height: 40.0)
     }
     
     //
@@ -45,8 +89,13 @@ internal class TabmanButtonBar: TabmanBar {
             }
             
             let update = {
-                self.focussedButton?.setTitleColor(self.selectedColor, for: .normal)
-                self.focussedButton?.tintColor = self.selectedColor
+                if let focussedButton = self.focussedButton, let index = self.buttons.index(of: focussedButton),
+                    let focussedItem = self.items?[index], let color = focussedItem.context as? UIColor {
+                    focussedButton.setTitleColor(color, for: .normal)
+                    focussedButton.tintColor = color
+                }
+//                self.focussedButton?.setTitleColor(self.selectedColor, for: .normal)
+//                self.focussedButton?.tintColor = self.selectedColor
                 self.focussedButton?.titleLabel?.font = self.selectedTextFont
                 oldValue?.setTitleColor(self.color, for: .normal)
                 oldValue?.tintColor = self.color
@@ -105,8 +154,8 @@ internal class TabmanButtonBar: TabmanBar {
             }
             
             self.updateButtons { (button) in
-                let insets = UIEdgeInsets(top: itemVerticalPadding, left: 0.0,
-                                          bottom: itemVerticalPadding, right: 0.0)
+                let insets = UIEdgeInsets(top: 0, left: 0.0,
+                                          bottom: 8, right: 0.0)
                 button.contentEdgeInsets = insets
                 self.layoutIfNeeded()
             }
@@ -212,7 +261,7 @@ internal class TabmanButtonBar: TabmanBar {
         var previousButton: UIButton?
         for (index, item) in items.enumerated() {
             
-            let button = UIButton()
+            let button = TabmanCenteredButton()
             view.addSubview(button)
             
             if let image = item.image, let title = item.title {
@@ -223,7 +272,7 @@ internal class TabmanButtonBar: TabmanBar {
                 }
                 button.setTitle(title, for: .normal)
                 // Nudge it over a little bit
-                button.titleEdgeInsets = UIEdgeInsets(top: 0.0, left: 5.0, bottom: 0.0, right: 0.0)
+                // button.titleEdgeInsets = UIEdgeInsets(top: 0.0, left: 5.0, bottom: 0.0, right: 0.0)
             } else if let title = item.title {
                 button.setTitle(title, for: .normal)
             } else if let image = item.image {
@@ -243,9 +292,9 @@ internal class TabmanButtonBar: TabmanBar {
             button.pinToSuperviewEdge(.top)
             button.pinToSuperviewEdge(.bottom)
             
-            let verticalPadding = self.itemVerticalPadding
-            let insets = UIEdgeInsets(top: verticalPadding, left: 0.0, bottom: verticalPadding, right: 0.0)
-            button.contentEdgeInsets = insets
+            //let verticalPadding = self.itemVerticalPadding
+            //let insets = UIEdgeInsets(top: verticalPadding, left: 0.0, bottom: verticalPadding, right: 0.0)
+            //button.contentEdgeInsets = insets
             
             // Add horizontal pin constraints
             // These are breakable (For equal width instances etc.)
